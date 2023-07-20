@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workercontagem
+spec:
+  selector:
+    matchLabels:
+      app: workercontagem
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: workercontagem
+    spec:
+      containers:
+      - name: workercontagem
+        image: renatogroffe/workercontagem-kafka-sql-appinsights-dotnet7:1
+        env:
+        - name: ConnectionStrings__ApplicationInsights
+          valueFrom:
+            secretKeyRef:
+              name: workercontagemsecret
+              key: ConnectionAppInsights
+        - name: ConnectionStrings__BaseContagem
+          valueFrom:
+            secretKeyRef:
+              name: workercontagemsecret
+              key: ConnectionSqlServer
+        - name: ConnectionStrings__ApacheKafka
+          valueFrom:
+            secretKeyRef:
+              name: workercontagemsecret
+              key: ConnectionApacheKafka
+        - name: ApacheKafka__Topic
+          value: topic-contagem
+        - name: ApacheKafka__GroupId
+          value: workercontagem
+        - name: ApacheKafka__Host
+          value: resource.servicebus.windows.net:9093
+        - name: ApacheKafka__Username
+          valueFrom:
+            secretKeyRef:
+              name: workercontagemsecret
+              key: UsernameApacheKafka

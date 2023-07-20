@@ -1,0 +1,40 @@
+# Documentacao: https://keda.sh/docs/2.11/scalers/apache-kafka/
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: workercontagem-triggerauth-kafka
+spec:
+  secretTargetRef:
+  - parameter: sasl
+    name: workercontagemsecret
+    key: SaslApacheKafka
+  - parameter: username
+    name: workercontagemsecret
+    key: UsernameApacheKafka
+  - parameter: password
+    name: workercontagemsecret
+    key: ConnectionApacheKafka
+  - parameter: tls
+    name: workercontagemsecret
+    key: TlsApacheKafka
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: workercontagem-scaledobject
+spec:
+  scaleTargetRef:
+    name: workercontagem
+  pollingInterval: 45
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  triggers:
+  - type: kafka
+    metadata:
+      bootstrapServers: resource.servicebus.windows.net:9093
+      consumerGroup: workercontagem
+      topic: topic-contagem
+      lagThreshold: '5'
+      offsetResetPolicy: earliest
+    authenticationRef:
+      name: workercontagem-triggerauth-kafka
