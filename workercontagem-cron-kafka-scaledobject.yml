@@ -1,4 +1,5 @@
-# Documentacao: https://keda.sh/docs/2.11/scalers/apache-kafka/
+# Documentacao Apache Kafka: https://keda.sh/docs/2.11/scalers/apache-kafka/
+# Documentacao Cron: https://keda.sh/docs/2.11/scalers/cron/
 apiVersion: keda.sh/v1alpha1
 kind: TriggerAuthentication
 metadata:
@@ -21,12 +22,13 @@ spec:
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: workercontagem-scaledobject
+  name: workercontagem-cron-kafka-scaledobject
 spec:
   scaleTargetRef:
     name: workercontagem
   pollingInterval: 45
-  minReplicaCount: 1
+  cooldownPeriod:  120
+  minReplicaCount: 0
   maxReplicaCount: 10
   triggers:
   - type: kafka
@@ -35,6 +37,13 @@ spec:
       consumerGroup: workercontagem
       topic: topic-contagem
       lagThreshold: '5'
-      offsetResetPolicy: earliest
+      activationLagThreshold: '1'
+      offsetResetPolicy: latest
     authenticationRef:
       name: workercontagem-triggerauth-kafka
+  - type: cron
+    metadata:
+      timezone: America/Sao_Paulo
+      start: 24 12 * * *
+      end: 40 12 * * *
+      desiredReplicas: "6"
